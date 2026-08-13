@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, JSON, Boolean
 from sqlalchemy.orm import relationship
 from database import Base
 
@@ -15,6 +15,7 @@ class Car(Base):
     seats = Column(Integer)
     mileage = Column(Float)
     images = Column(JSON, default=[])
+    is_featured = Column(Boolean, default=False)
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -34,6 +35,7 @@ class Booking(Base):
     car_id = Column(Integer, ForeignKey("cars.id"))
     start_date = Column(String)
     end_date = Column(String)
+    total_price = Column(Float)
     status = Column(String, default="Pending")
     
     customer = relationship("Customer", back_populates="bookings")

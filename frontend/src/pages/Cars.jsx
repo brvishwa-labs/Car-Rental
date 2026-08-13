@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ChevronLeft, ChevronRight, User } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import LoginModal from '../components/LoginModal';
 import BookingModal from '../components/BookingModal';
@@ -141,16 +141,22 @@ const CarCard = ({ car, onReserve }) => {
   );
 };
 
-function Home() {
-  const [cars, setCars] = useState([]);
+function Cars() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Premium');
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
   const { dbUser, logout } = useAuth();
-  const navigate = useNavigate();
-  const [searchSeats, setSearchSeats] = useState('All');
+  const [cars, setCars] = useState([]);
+  
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialSeats = searchParams.get('seats') || 'All';
+
+  const [filterSeats, setFilterSeats] = useState(initialSeats);
+  const [filterFuel, setFilterFuel] = useState('All');
+  const [filterMileage, setFilterMileage] = useState('All');
 
   const handleReserve = (car) => {
     if (!dbUser) {
@@ -222,7 +228,6 @@ function Home() {
         </div>
       </header>
 
-      {/* Login & Booking Modals */}
       <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
       <BookingModal 
         isOpen={isBookingModalOpen} 
@@ -233,50 +238,25 @@ function Home() {
         car={selectedCar} 
       />
 
-      {/* Fixed Background Image */}
-      <div className="fixed inset-0 z-0">
-        <img 
-          src="/Left Sun Beach.png" 
-          alt="Pondicherry Beach" 
-          className="w-full h-full object-cover object-center"
-        />
-        {/* Subtle premium gradient overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/20 to-transparent"></div>
-      </div>
-
-      {/* Hero Section */}
-      <section className="relative w-full min-h-[90vh] flex flex-col items-center justify-center px-6 py-20 z-10">
-        {/* Hero Content */}
-        <div className="relative z-10 text-center w-full max-w-5xl mx-auto pt-10">
+      {/* Fleet Listing Area */}
+      <section className="w-full bg-[#f8f9fa] relative z-10 pb-32">
+        <div className="px-6 max-w-7xl mx-auto w-full">
           <FadeIn>
-            <h1 className="text-5xl md:text-7xl font-black text-white mb-6 leading-tight tracking-tight drop-shadow-2xl">
-              Elevate Your Journey <br /> in Pondicherry
-            </h1>
+            <div className="text-center mb-10 md:mb-12 pt-8 md:pt-16">
+              <h2 className="text-xs font-bold tracking-[0.3em] text-[#c88349] uppercase mb-4">The Collection</h2>
+              <h3 className="text-4xl md:text-5xl font-black text-[#1c3a59] mb-6">Our {activeTab}</h3>
+              <div className="w-24 h-1 bg-[#c88349] mx-auto rounded-full"></div>
+            </div>
           </FadeIn>
           
           <FadeIn delay={200}>
-            <p className="text-xl md:text-2xl font-light text-white/90 mb-16 drop-shadow-lg max-w-2xl mx-auto">
-              Experience the perfect blend of luxury and comfort with our premium fleet.
-            </p>
-          </FadeIn>
-
-          {/* Booking Widget */}
-          <FadeIn delay={400} className="w-full mt-10 relative text-left">
-            {/* Widget Body */}
-            <div className="bg-white p-8 md:p-10 rounded-3xl shadow-2xl flex flex-col md:flex-row gap-6 items-center mx-4 md:mx-0 relative z-20">
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-50 mb-12 flex flex-col md:flex-row gap-6 items-center justify-between">
               <div className="w-full">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Date</label>
-                <input 
-                  type="date" 
-                  className="w-full border-b-2 border-gray-100 px-2 py-3 text-lg font-medium text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors bg-transparent"
-                />
-              </div>
-              <div className="w-full border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Seater</label>
                 <select 
-                  value={searchSeats}
-                  onChange={(e) => setSearchSeats(e.target.value)}
-                  className="w-full border-b-2 border-gray-100 px-2 py-3 text-lg font-medium text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors bg-transparent cursor-pointer"
+                  value={filterSeats}
+                  onChange={(e) => setFilterSeats(e.target.value)}
+                  className="w-full border-b-2 border-gray-100 px-2 py-2 text-sm md:text-base font-medium text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors bg-transparent cursor-pointer"
                 >
                   <option value="All">All Seats</option>
                   <option value="5">5 Seater</option>
@@ -284,44 +264,56 @@ function Home() {
                   <option value="8+">8+ Seater</option>
                 </select>
               </div>
-              <div className="w-full md:w-auto pt-6 md:pt-0 md:pl-6">
-                <button 
-                  onClick={() => navigate(`/cars?seats=${searchSeats}`)}
-                  className="w-full md:w-auto bg-[#c88349] hover:bg-[#b06f36] text-white px-12 py-5 rounded-xl font-bold tracking-widest transition-all hover:shadow-xl hover:shadow-[#c88349]/30 whitespace-nowrap"
+              <div className="w-full">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Fuel Type</label>
+                <select 
+                  value={filterFuel}
+                  onChange={(e) => setFilterFuel(e.target.value)}
+                  className="w-full border-b-2 border-gray-100 px-2 py-2 text-sm md:text-base font-medium text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors bg-transparent cursor-pointer"
                 >
-                  FIND VEHICLE
-                </button>
+                  <option value="All">All Fuels</option>
+                  <option value="Petrol">Petrol</option>
+                  <option value="Diesel">Diesel</option>
+                  <option value="EV">EV / Hybrid</option>
+                </select>
               </div>
-            </div>
-          </FadeIn>
-        </div>
-      </section>
-
-      {/* Smooth Gradient Transition into Content Area */}
-      <div className="relative z-10 w-full h-[50vh] bg-gradient-to-b from-transparent via-[#f8f9fa]/50 to-[#f8f9fa] pointer-events-none"></div>
-
-      {/* Fleet Listing Area */}
-      <section className="w-full bg-[#f8f9fa] relative z-10 pb-32">
-        <div className="px-6 max-w-7xl mx-auto w-full">
-          <FadeIn>
-            <div className="text-center mb-20 pt-10">
-              <h2 className="text-xs font-bold tracking-[0.3em] text-[#c88349] uppercase mb-4">The Collection</h2>
-              <h3 className="text-4xl md:text-5xl font-black text-[#1c3a59] mb-6">Our {activeTab}</h3>
-              <div className="w-24 h-1 bg-[#c88349] mx-auto rounded-full"></div>
+              <div className="w-full">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Mileage</label>
+                <select 
+                  value={filterMileage}
+                  onChange={(e) => setFilterMileage(e.target.value)}
+                  className="w-full border-b-2 border-gray-100 px-2 py-2 text-sm md:text-base font-medium text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors bg-transparent cursor-pointer"
+                >
+                  <option value="All">Any Mileage</option>
+                  <option value="15">Up to 15 km/l</option>
+                  <option value="15-20">15 - 20 km/l</option>
+                  <option value="20+">20+ km/l</option>
+                </select>
+              </div>
             </div>
           </FadeIn>
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
-            {Array.isArray(cars) && cars.filter(car => car.is_featured).slice(0, 3).map((car, index) => (
+            {Array.isArray(cars) && cars.filter(car => {
+              // Seat filter
+              if (filterSeats !== 'All') {
+                if (filterSeats === '8+' && car.seats < 8) return false;
+                if (filterSeats !== '8+' && car.seats !== parseInt(filterSeats)) return false;
+              }
+              // Fuel filter
+              if (filterFuel !== 'All' && car.fuel_type?.toLowerCase() !== filterFuel.toLowerCase() && !(filterFuel === 'EV' && car.fuel_type?.toLowerCase().includes('hybrid'))) return false;
+              // Mileage filter
+              if (filterMileage !== 'All') {
+                if (filterMileage === '15' && car.mileage > 15) return false;
+                if (filterMileage === '15-20' && (car.mileage < 15 || car.mileage > 20)) return false;
+                if (filterMileage === '20+' && car.mileage < 20) return false;
+              }
+              return true;
+            }).map((car, index) => (
               <FadeIn key={car.id} delay={index * 150}>
                 <CarCard car={car} onReserve={handleReserve} />
               </FadeIn>
             ))}
-            {Array.isArray(cars) && cars.filter(car => car.is_featured).length === 0 && cars.length > 0 && (
-              <div className="col-span-full py-20 text-center text-gray-500 font-medium">
-                No featured cars available at the moment.
-              </div>
-            )}
             {cars.length === 0 && (
               <div className="col-span-full py-20 text-center text-gray-500 font-medium">
                 Loading the exclusive collection...
@@ -329,15 +321,6 @@ function Home() {
             )}
           </div>
           
-          {cars.length > 3 && (
-            <FadeIn delay={450}>
-              <div className="mt-16 text-center">
-                <Link to="/cars" className="inline-flex items-center justify-center bg-[#1c3a59] text-white font-bold px-10 py-4 rounded-full tracking-wider hover:bg-[#c88349] hover:shadow-lg transition-all duration-300">
-                  VIEW ALL CARS
-                </Link>
-              </div>
-            </FadeIn>
-          )}
         </div>
       </section>
 
@@ -379,4 +362,4 @@ function Home() {
   );
 }
 
-export default Home;
+export default Cars;

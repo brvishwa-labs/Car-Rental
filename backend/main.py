@@ -46,6 +46,7 @@ def create_car(
     fuel_type: str = Form(...),
     seats: int = Form(...),
     mileage: float = Form(...),
+    is_featured: Optional[bool] = Form(False),
     images: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
@@ -68,6 +69,7 @@ def create_car(
         fuel_type=fuel_type,
         seats=seats,
         mileage=mileage,
+        is_featured=is_featured,
         images=image_paths
     )
     db.add(db_car)
@@ -86,6 +88,7 @@ def update_car(
     fuel_type: Optional[str] = Form(None),
     seats: Optional[int] = Form(None),
     mileage: Optional[float] = Form(None),
+    is_featured: Optional[bool] = Form(None),
     images: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
@@ -101,6 +104,7 @@ def update_car(
     if fuel_type is not None: db_car.fuel_type = fuel_type
     if seats is not None: db_car.seats = seats
     if mileage is not None: db_car.mileage = mileage
+    if is_featured is not None: db_car.is_featured = is_featured
     
     if images is not None:
         image_paths = []
@@ -132,7 +136,7 @@ def delete_car(car_id: int, db: Session = Depends(get_db)):
 # -----------------
 
 @app.get("/api/auth/me")
-def sync_user(decoded_token: dict = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+def sync_user(name: str = None, decoded_token: dict = Depends(auth.get_current_user), db: Session = Depends(get_db)):
     phone_number = decoded_token.get('phone_number')
     if not phone_number:
         raise HTTPException(status_code=400, detail="No phone number found in token")
@@ -142,10 +146,15 @@ def sync_user(decoded_token: dict = Depends(auth.get_current_user), db: Session 
     if not customer:
         # Create new customer automatically
         customer = models.Customer(
-            name="New User", # They can update this later
+            name=name or "New User", # They can update this later
             phone=phone_number,
         )
         db.add(customer)
+        db.commit()
+        db.refresh(customer)
+    elif name and customer.name != name:
+        # Update existing customer name if provided
+        customer.name = name
         db.commit()
         db.refresh(customer)
         
@@ -187,7 +196,9 @@ def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_
 # --- BOOKINGS ---
 
 @app.get("/api/bookings", response_model=List[schemas.Booking])
-def get_bookings(db: Session = Depends(get_db)):
+def get_bookings(customer_id: int = None, db: Session = Depends(get_db)):
+    if customer_id:
+        return db.query(models.Booking).filter(models.Booking.customer_id == customer_id).all()
     return db.query(models.Booking).all()
 
 @app.post("/api/bookings", response_model=schemas.Booking)

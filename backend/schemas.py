@@ -11,6 +11,7 @@ class CarBase(BaseModel):
     seats: int
     mileage: float
     images: List[str] = []
+    is_featured: Optional[bool] = False
 
 class CarCreate(CarBase):
     pass
@@ -25,6 +26,7 @@ class CarUpdate(CarBase):
     seats: Optional[int] = None
     mileage: Optional[float] = None
     images: Optional[List[str]] = None
+    is_featured: Optional[bool] = None
 
 class Car(CarBase):
     id: int
@@ -56,6 +58,7 @@ class BookingBase(BaseModel):
     car_id: int
     start_date: str
     end_date: str
+    total_price: float
     status: Optional[str] = "Pending"
 
 class BookingCreate(BookingBase):

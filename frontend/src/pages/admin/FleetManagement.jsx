@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Search, X, UploadCloud, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, UploadCloud, ChevronLeft, ChevronRight, Star } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 
 function FleetManagement() {
@@ -155,6 +155,22 @@ function FleetManagement() {
     }
   };
 
+  const toggleFeatured = async (car) => {
+    try {
+      const data = new FormData();
+      data.append('is_featured', !car.is_featured);
+      const res = await fetch(`http://localhost:8000/api/cars/${car.id}`, {
+        method: 'PUT',
+        body: data
+      });
+      if (res.ok) {
+        fetchCars();
+      }
+    } catch (error) {
+      console.error("Failed to toggle featured status", error);
+    }
+  };
+
   const openModal = (car = null) => {
     if (car) {
       setEditingCar(car);
@@ -238,6 +254,13 @@ function FleetManagement() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
+                      <button 
+                        onClick={() => toggleFeatured(car)} 
+                        title={car.is_featured ? "Remove from Home Page" : "Show on Home Page"}
+                        className={`p-2 transition-colors rounded-lg ${car.is_featured ? 'text-yellow-500 hover:bg-yellow-50' : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50'}`}
+                      >
+                        <Star className="w-4 h-4" fill={car.is_featured ? "currentColor" : "none"} />
+                      </button>
                       <button onClick={() => openModal(car)} className="p-2 text-gray-400 hover:text-[#1c3a59] transition-colors rounded-lg hover:bg-gray-100">
                         <Edit2 className="w-4 h-4" />
                       </button>

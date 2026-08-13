@@ -14,10 +14,14 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   // Sync with Postgres Backend
-  const syncWithBackend = async (firebaseUser) => {
+  const syncWithBackend = async (firebaseUser, userName = null) => {
     try {
       const token = await firebaseUser.getIdToken();
-      const res = await fetch('http://localhost:8000/api/auth/me', {
+      const url = new URL('http://localhost:8000/api/auth/me');
+      if (userName) {
+        url.searchParams.append('name', userName);
+      }
+      const res = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -67,7 +71,8 @@ export function AuthProvider({ children }) {
     currentUser,
     dbUser,
     sendOTP,
-    logout
+    logout,
+    syncWithBackend
   };
 
   return (

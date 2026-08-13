@@ -23,7 +23,7 @@ function Customers() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-[#1c3a59]">Customer Management</h2>
+        <h2 className="text-2xl font-bold text-[#1c3a59]">Lead Management</h2>
       </div>
 
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -51,7 +51,7 @@ function Customers() {
                   <td colSpan="4" className="px-6 py-12 text-center text-gray-400">
                     <div className="flex flex-col items-center">
                       <Users className="w-12 h-12 mb-4 text-gray-300" />
-                      <p>No customers available yet.</p>
+                      <p>No leads available yet.</p>
                     </div>
                   </td>
                 </tr>

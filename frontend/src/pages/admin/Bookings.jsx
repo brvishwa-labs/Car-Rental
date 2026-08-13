@@ -50,6 +50,7 @@ function Bookings() {
                 <th className="px-6 py-4">Customer</th>
                 <th className="px-6 py-4">Car</th>
                 <th className="px-6 py-4">Dates</th>
+                <th className="px-6 py-4">Total</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
@@ -61,6 +62,7 @@ function Bookings() {
                   <td className="px-6 py-4">{booking.customer ? booking.customer.name : 'Unknown'}</td>
                   <td className="px-6 py-4">{booking.car ? `${booking.car.brand} ${booking.car.model}` : 'Unknown'}</td>
                   <td className="px-6 py-4">{booking.start_date} to {booking.end_date}</td>
+                  <td className="px-6 py-4 font-bold text-[#c88349]">₹{booking.total_price?.toLocaleString() || 0}</td>
                   <td className="px-6 py-4">
                     <span className={`text-xs font-medium px-2.5 py-0.5 rounded ${
                       booking.status === 'Approved' ? 'bg-green-100 text-green-800' :

@@ -3,8 +3,9 @@ import { X, Smartphone, ShieldCheck, Loader2 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const LoginModal = ({ isOpen, onClose }) => {
-  const { sendOTP } = useAuth();
+  const { sendOTP, syncWithBackend } = useAuth();
   const [step, setStep] = useState(1); // 1 = phone, 2 = otp
+  const [userName, setUserName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,6 +16,7 @@ const LoginModal = ({ isOpen, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       setStep(1);
+      setUserName('');
       setPhoneNumber('+91');
       setOtp('');
       setError('');
@@ -50,7 +52,8 @@ const LoginModal = ({ isOpen, onClose }) => {
     setError('');
     setLoading(true);
     try {
-      await confirmationResult.confirm(otp);
+      const result = await confirmationResult.confirm(otp);
+      await syncWithBackend(result.user, userName);
       onClose(); // Close modal on success! AuthContext will auto-sync with backend.
     } catch (err) {
       console.error(err);
@@ -88,6 +91,20 @@ const LoginModal = ({ isOpen, onClose }) => {
 
         {step === 1 ? (
           <form onSubmit={handleSendOTP}>
+            <div className="mb-4">
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                Full Name
+              </label>
+              <input 
+                type="text"
+                required
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="John Doe"
+                className="w-full border-2 border-gray-100 rounded-xl px-4 py-4 text-lg font-bold text-[#1c3a59] focus:outline-none focus:border-[#c88349] transition-colors"
+              />
+            </div>
+
             <div className="mb-6">
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                 Phone Number
@@ -104,7 +121,7 @@ const LoginModal = ({ isOpen, onClose }) => {
             <div id="recaptcha-container" className="mb-4"></div>
 
             <button 
-              disabled={loading || phoneNumber.length < 10}
+              disabled={loading || phoneNumber.length < 10 || !userName.trim()}
               type="submit"
               className="w-full bg-[#1c3a59] hover:bg-[#c88349] disabled:opacity-50 text-white font-bold py-4 rounded-xl transition-colors tracking-widest text-sm flex items-center justify-center gap-2"
             >
@@ -115,6 +132,7 @@ const LoginModal = ({ isOpen, onClose }) => {
         ) : (
           <form onSubmit={handleVerifyOTP}>
             <div className="mb-6 text-center">
+              <h4 className="text-xl font-bold text-[#1c3a59] mb-2">Hi {userName || 'there'},</h4>
               <p className="text-sm font-medium text-gray-500 mb-6">
                 Enter the 6-digit code sent to <span className="font-bold text-[#1c3a59]">{phoneNumber}</span>
               </p>

@@ -9,7 +9,7 @@ function AdminLayout() {
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Fleet Management', href: '/admin/fleet', icon: CarFront },
     { name: 'Bookings', href: '/admin/bookings', icon: FileText },
-    { name: 'Customers', href: '/admin/customers', icon: Users },
+    { name: 'Leads', href: '/admin/customers', icon: Users },
   ];
 
   return (

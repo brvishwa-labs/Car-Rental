@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Custom hook for scroll fade-in animation
 function useIntersectionObserver(options = {}) {
@@ -36,6 +37,99 @@ const FadeIn = ({ children, delay = 0, className = '' }) => {
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}
+    </div>
+  )
+}
+
+const CarCard = ({ car }) => {
+  const [imageIndex, setImageIndex] = useState(0);
+  
+  // Backwards compatibility if some cars still have old `image` string instead of `images` array
+  const images = car.images && car.images.length > 0 
+    ? car.images 
+    : (car.image ? [car.image] : []);
+
+  const currentImage = images.length > 0 
+    ? (images[imageIndex].startsWith('/') ? `http://localhost:8000${images[imageIndex]}` : images[imageIndex]) 
+    : '';
+
+  return (
+    <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 group border border-gray-50 flex flex-col h-full">
+      <div className="h-64 overflow-hidden relative p-4 bg-gray-50/50">
+        <img 
+          src={currentImage} 
+          alt={`${car.brand} ${car.model}`} 
+          className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
+        />
+        
+        {images.length > 1 && (
+          <div className="absolute inset-0 flex items-center justify-between px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImageIndex(p => Math.max(0, p - 1)); }} 
+              className="p-1.5 bg-white/70 hover:bg-white text-gray-800 rounded-full shadow pointer-events-auto z-20"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <button 
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setImageIndex(p => Math.min(images.length - 1, p + 1)); }} 
+              className="p-1.5 bg-white/70 hover:bg-white text-gray-800 rounded-full shadow pointer-events-auto z-20"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+        
+        {images.length > 1 && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none">
+            {images.map((_, i) => (
+              <div key={i} className={`w-2 h-2 rounded-full transition-colors ${i === imageIndex ? 'bg-[#1c3a59] shadow-sm' : 'bg-gray-300'}`}></div>
+            ))}
+          </div>
+        )}
+
+        <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
+          <span className="text-[#c88349] font-black tracking-wide text-sm">₹{car.price_per_day}</span>
+          <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">/ day</span>
+        </div>
+      </div>
+      
+      <div className="p-8 flex flex-col flex-grow">
+        <div className="mb-6 border-b border-gray-100 pb-6 flex-grow">
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{car.brand}</p>
+          <h4 className="text-2xl font-black text-[#1c3a59]">{car.model}</h4>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-y-4 gap-x-2 mb-8 text-sm font-semibold text-gray-600">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+            </div>
+            {car.transmission}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v8l9-11h-7z" /></svg>
+            </div>
+            {car.fuel_type}
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+            </div>
+            {car.seats} Seats
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+            </div>
+            {car.mileage} km/l
+          </div>
+        </div>
+
+        <button className="w-full bg-[#f8f9fa] text-[#1c3a59] hover:bg-[#1c3a59] hover:text-white font-bold py-4 rounded-xl transition-colors tracking-widest text-sm">
+          RESERVE NOW
+        </button>
+      </div>
     </div>
   );
 };
@@ -187,57 +281,7 @@ function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
             {Array.isArray(cars) && cars.map((car, index) => (
               <FadeIn key={car.id} delay={index * 150}>
-                <div className="bg-white rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] hover:-translate-y-2 transition-all duration-500 group border border-gray-50 flex flex-col h-full">
-                  <div className="h-64 overflow-hidden relative p-4 bg-gray-50/50">
-                    <img 
-                      src={car.image?.startsWith('/') ? `http://localhost:8000${car.image}` : car.image} 
-                      alt={`${car.brand} ${car.model}`} 
-                      className="w-full h-full object-contain mix-blend-multiply group-hover:scale-110 transition-transform duration-700 ease-out"
-                    />
-                    <div className="absolute top-6 right-6 bg-white/90 backdrop-blur px-4 py-2 rounded-full shadow-sm">
-                      <span className="text-[#c88349] font-black tracking-wide text-sm">₹{car.price_per_day}</span>
-                      <span className="text-[10px] text-gray-500 font-bold uppercase ml-1">/ day</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-8 flex flex-col flex-grow">
-                    <div className="mb-6 border-b border-gray-100 pb-6 flex-grow">
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{car.brand}</p>
-                      <h4 className="text-2xl font-black text-[#1c3a59]">{car.model}</h4>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-y-4 gap-x-2 mb-8 text-sm font-semibold text-gray-600">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
-                        </div>
-                        {car.transmission}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v8l9-11h-7z" /></svg>
-                        </div>
-                        {car.fuel_type}
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                        </div>
-                        {car.seats} Seats
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-[#f8f9fa] flex items-center justify-center text-[#c88349] shadow-sm">
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-                        </div>
-                        {car.mileage} km/l
-                      </div>
-                    </div>
-
-                    <button className="w-full bg-[#f8f9fa] text-[#1c3a59] hover:bg-[#1c3a59] hover:text-white font-bold py-4 rounded-xl transition-colors tracking-widest text-sm">
-                      RESERVE NOW
-                    </button>
-                  </div>
-                </div>
+                <CarCard car={car} />
               </FadeIn>
             ))}
             {cars.length === 0 && (

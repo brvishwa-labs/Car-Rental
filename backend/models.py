@@ -1,5 +1,9 @@
+<<<<<<< Updated upstream
 from sqlalchemy import Column, Integer, String, Float, ForeignKey
 from sqlalchemy.orm import relationship
+=======
+from sqlalchemy import Column, Integer, String, Float, JSON
+>>>>>>> Stashed changes
 from database import Base
 
 class Car(Base):
@@ -14,6 +18,7 @@ class Car(Base):
     fuel_type = Column(String)
     seats = Column(Integer)
     mileage = Column(Float)
+<<<<<<< Updated upstream
     image = Column(String)
 
 class Customer(Base):
@@ -38,3 +43,6 @@ class Booking(Base):
     
     customer = relationship("Customer", back_populates="bookings")
     car = relationship("Car")
+=======
+    images = Column(JSON, default=[])
+>>>>>>> Stashed changes

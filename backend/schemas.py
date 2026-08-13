@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 
 class CarBase(BaseModel):
     brand: str
@@ -10,7 +10,7 @@ class CarBase(BaseModel):
     fuel_type: str
     seats: int
     mileage: float
-    image: str
+    images: List[str] = []
 
 class CarCreate(CarBase):
     pass
@@ -24,7 +24,7 @@ class CarUpdate(CarBase):
     fuel_type: Optional[str] = None
     seats: Optional[int] = None
     mileage: Optional[float] = None
-    image: Optional[str] = None
+    images: Optional[List[str]] = None
 
 class Car(CarBase):
     id: int

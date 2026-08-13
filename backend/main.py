@@ -45,15 +45,18 @@ def create_car(
     fuel_type: str = Form(...),
     seats: int = Form(...),
     mileage: float = Form(...),
-    image: UploadFile = File(...),
+    images: List[UploadFile] = File(...),
     db: Session = Depends(get_db)
 ):
-    file_extension = image.filename.split(".")[-1]
-    file_name = f"{uuid.uuid4()}.{file_extension}"
-    file_path = f"uploads/{file_name}"
-    
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(image.file, buffer)
+    image_paths = []
+    for img in images:
+        file_extension = img.filename.split(".")[-1]
+        file_name = f"{uuid.uuid4()}.{file_extension}"
+        file_path = f"uploads/{file_name}"
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(img.file, buffer)
+        image_paths.append(f"/{file_path}")
         
     db_car = models.Car(
         brand=brand,
@@ -64,7 +67,7 @@ def create_car(
         fuel_type=fuel_type,
         seats=seats,
         mileage=mileage,
-        image=f"/{file_path}"
+        images=image_paths
     )
     db.add(db_car)
     db.commit()
@@ -82,7 +85,7 @@ def update_car(
     fuel_type: Optional[str] = Form(None),
     seats: Optional[int] = Form(None),
     mileage: Optional[float] = Form(None),
-    image: Optional[UploadFile] = File(None),
+    images: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
     db_car = db.query(models.Car).filter(models.Car.id == car_id).first()
@@ -98,13 +101,16 @@ def update_car(
     if seats is not None: db_car.seats = seats
     if mileage is not None: db_car.mileage = mileage
     
-    if image is not None:
-        file_extension = image.filename.split(".")[-1]
-        file_name = f"{uuid.uuid4()}.{file_extension}"
-        file_path = f"uploads/{file_name}"
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(image.file, buffer)
-        db_car.image = f"/{file_path}"
+    if images is not None:
+        image_paths = []
+        for img in images:
+            file_extension = img.filename.split(".")[-1]
+            file_name = f"{uuid.uuid4()}.{file_extension}"
+            file_path = f"uploads/{file_name}"
+            with open(file_path, "wb") as buffer:
+                shutil.copyfileobj(img.file, buffer)
+            image_paths.append(f"/{file_path}")
+        db_car.images = image_paths
     
     db.commit()
     db.refresh(db_car)

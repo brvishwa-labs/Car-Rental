@@ -123,9 +123,51 @@ def delete_car(car_id: int, db: Session = Depends(get_db)):
 @app.get("/api/stats")
 def get_stats(db: Session = Depends(get_db)):
     total_cars = db.query(models.Car).count()
+    pending_bookings = db.query(models.Booking).filter(models.Booking.status == "Pending").count()
+    active_rentals = db.query(models.Booking).filter(models.Booking.status == "Approved").count()
+    # Mock revenue for now as it would require calculating based on price and dates
     return {
         "total_cars": total_cars,
-        "pending_bookings": 12, # mock data for now
-        "total_revenue": 45000, # mock data for now
-        "active_rentals": 5 # mock data for now
+        "pending_bookings": pending_bookings,
+        "total_revenue": 45000, 
+        "active_rentals": active_rentals
     }
+
+# --- CUSTOMERS ---
+
+@app.get("/api/customers", response_model=List[schemas.Customer])
+def get_customers(db: Session = Depends(get_db)):
+    return db.query(models.Customer).all()
+
+@app.post("/api/customers", response_model=schemas.Customer)
+def create_customer(customer: schemas.CustomerCreate, db: Session = Depends(get_db)):
+    db_customer = models.Customer(**customer.dict())
+    db.add(db_customer)
+    db.commit()
+    db.refresh(db_customer)
+    return db_customer
+
+# --- BOOKINGS ---
+
+@app.get("/api/bookings", response_model=List[schemas.Booking])
+def get_bookings(db: Session = Depends(get_db)):
+    return db.query(models.Booking).all()
+
+@app.post("/api/bookings", response_model=schemas.Booking)
+def create_booking(booking: schemas.BookingCreate, db: Session = Depends(get_db)):
+    db_booking = models.Booking(**booking.dict())
+    db.add(db_booking)
+    db.commit()
+    db.refresh(db_booking)
+    return db_booking
+
+@app.put("/api/bookings/{booking_id}", response_model=schemas.Booking)
+def update_booking(booking_id: int, booking: schemas.BookingUpdate, db: Session = Depends(get_db)):
+    db_booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not db_booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    
+    db_booking.status = booking.status
+    db.commit()
+    db.refresh(db_booking)
+    return db_booking

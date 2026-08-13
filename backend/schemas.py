@@ -31,3 +31,43 @@ class Car(CarBase):
 
     class Config:
         orm_mode = True
+
+class CustomerBase(BaseModel):
+    name: str
+    email: str
+    phone: str
+
+class CustomerCreate(CustomerBase):
+    pass
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+
+class Customer(CustomerBase):
+    id: int
+
+    class Config:
+        orm_mode = True
+
+class BookingBase(BaseModel):
+    customer_id: int
+    car_id: int
+    start_date: str
+    end_date: str
+    status: Optional[str] = "Pending"
+
+class BookingCreate(BookingBase):
+    pass
+
+class BookingUpdate(BaseModel):
+    status: str
+
+class Booking(BookingBase):
+    id: int
+    customer: Optional[Customer] = None
+    car: Optional[Car] = None
+
+    class Config:
+        orm_mode = True

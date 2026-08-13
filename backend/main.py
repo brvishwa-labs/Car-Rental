@@ -9,6 +9,7 @@ import uuid
 
 import models, schemas
 from database import engine, get_db
+import auth
 
 # Ensure uploads directory exists
 os.makedirs("uploads", exist_ok=True)
@@ -125,6 +126,36 @@ def delete_car(car_id: int, db: Session = Depends(get_db)):
     db.delete(db_car)
     db.commit()
     return {"message": "Car deleted successfully"}
+
+# -----------------
+# AUTH / CUSTOMER ENDPOINTS
+# -----------------
+
+@app.get("/api/auth/me")
+def sync_user(decoded_token: dict = Depends(auth.get_current_user), db: Session = Depends(get_db)):
+    phone_number = decoded_token.get('phone_number')
+    if not phone_number:
+        raise HTTPException(status_code=400, detail="No phone number found in token")
+        
+    customer = db.query(models.Customer).filter(models.Customer.phone == phone_number).first()
+    
+    if not customer:
+        # Create new customer automatically
+        customer = models.Customer(
+            name="New User", # They can update this later
+            phone=phone_number,
+        )
+        db.add(customer)
+        db.commit()
+        db.refresh(customer)
+        
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "phone": customer.phone,
+        "email": customer.email,
+        "uid": decoded_token.get('uid')
+    }
 
 @app.get("/api/stats")
 def get_stats(db: Session = Depends(get_db)):

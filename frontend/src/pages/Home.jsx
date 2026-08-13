@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import LoginModal from '../components/LoginModal';
 
 // Custom hook for scroll fade-in animation
 function useIntersectionObserver(options = {}) {
@@ -138,6 +140,8 @@ function Home() {
   const [cars, setCars] = useState([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Premium');
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const { dbUser, logout } = useAuth();
 
   useEffect(() => {
     fetch('http://localhost:8000/api/cars')
@@ -176,12 +180,31 @@ function Home() {
             <a href="#" className="hover:text-[#c88349] transition-colors">HOME</a>
             <a href="#" className="hover:text-[#c88349] transition-colors">FLEET</a>
             <a href="#" className="hover:text-[#c88349] transition-colors">SERVICES</a>
-            <button className="bg-[#1c3a59] hover:bg-[#c88349] text-white px-8 py-3 rounded-full font-bold tracking-widest transition-colors shadow-lg shadow-[#1c3a59]/20 mt-4 md:mt-0 w-full md:w-auto text-xs">
-              SIGN IN
-            </button>
+            
+            {dbUser ? (
+              <div className="relative group cursor-pointer">
+                <div className="flex items-center gap-2 bg-[#f8f9fa] border-2 border-gray-100 px-5 py-2.5 rounded-full hover:border-[#c88349] transition-all">
+                  <User className="w-4 h-4 text-[#c88349]" />
+                  <span>{dbUser.name}</span>
+                </div>
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 overflow-hidden border border-gray-50">
+                  <button className="w-full text-left px-5 py-3 hover:bg-gray-50 text-[#1c3a59] font-semibold border-b border-gray-50">My Bookings</button>
+                  <button onClick={logout} className="w-full text-left px-5 py-3 hover:bg-red-50 text-red-500 font-semibold">Sign Out</button>
+                </div>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsLoginModalOpen(true)}
+                className="bg-[#1c3a59] hover:bg-[#c88349] text-white px-8 py-3 rounded-full font-bold tracking-widest transition-colors shadow-lg shadow-[#1c3a59]/20 mt-4 md:mt-0 w-full md:w-auto text-xs"
+              >
+                SIGN IN
+              </button>
+            )}
           </nav>
         </div>
       </header>
+
+      <LoginModal isOpen={isLoginModalOpen} onClose={() => setIsLoginModalOpen(false)} />
 
       {/* Fixed Background Image */}
       <div className="fixed inset-0 z-0">

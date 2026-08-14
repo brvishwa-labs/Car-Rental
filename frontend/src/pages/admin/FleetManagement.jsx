@@ -117,7 +117,13 @@ function FleetManagement() {
         if (key === 'images') {
           if (formData.images && formData.images.length > 0) {
             formData.images.forEach(img => {
-              data.append('images', img);
+              if (typeof img === 'string') {
+                // Remove the absolute URL part if present, just send the path
+                const path = img.replace(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}`, '');
+                data.append('existing_images', path);
+              } else {
+                data.append('new_images', img);
+              }
             });
           }
         } else if (formData[key] !== null && formData[key] !== undefined) {
@@ -183,7 +189,7 @@ function FleetManagement() {
         fuel_type: car.fuel_type,
         seats: car.seats,
         mileage: car.mileage,
-        images: [] 
+        images: car.images ? [...car.images] : [] 
       });
       setImagePreviews(car.images ? car.images.map(img => img.startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${img}` : img) : []);
     } else {

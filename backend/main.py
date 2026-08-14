@@ -96,7 +96,8 @@ def update_car(
     seats: Optional[int] = Form(None),
     mileage: Optional[float] = Form(None),
     is_featured: Optional[bool] = Form(None),
-    images: Optional[List[UploadFile]] = File(None),
+    existing_images: Optional[List[str]] = Form(None),
+    new_images: Optional[List[UploadFile]] = File(None),
     db: Session = Depends(get_db)
 ):
     db_car = db.query(models.Car).filter(models.Car.id == car_id).first()
@@ -113,16 +114,21 @@ def update_car(
     if mileage is not None: db_car.mileage = mileage
     if is_featured is not None: db_car.is_featured = is_featured
     
-    if images is not None:
-        image_paths = []
-        for img in images:
-            file_extension = img.filename.split(".")[-1]
-            file_name = f"{uuid.uuid4()}.{file_extension}"
-            file_path = f"uploads/{file_name}"
-            with open(file_path, "wb") as buffer:
-                shutil.copyfileobj(img.file, buffer)
-            image_paths.append(f"/{file_path}")
-        db_car.images = image_paths
+    final_image_paths = existing_images if existing_images else []
+    
+    if new_images is not None:
+        for img in new_images:
+            if img.filename: # Make sure it's actually a file
+                file_extension = img.filename.split(".")[-1]
+                file_name = f"{uuid.uuid4()}.{file_extension}"
+                file_path = f"uploads/{file_name}"
+                with open(file_path, "wb") as buffer:
+                    shutil.copyfileobj(img.file, buffer)
+                final_image_paths.append(f"/{file_path}")
+                
+    if existing_images is not None or new_images is not None:
+        db_car.images = final_image_paths
+
     
     db.commit()
     db.refresh(db_car)

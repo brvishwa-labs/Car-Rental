@@ -30,7 +30,7 @@ function FleetManagement() {
 
   const fetchCars = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/cars');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars`);
       if (res.ok) {
         const data = await res.json();
         setCars(data);
@@ -107,8 +107,8 @@ function FleetManagement() {
     e.preventDefault();
     try {
       const url = editingCar 
-        ? `http://localhost:8000/api/cars/${editingCar.id}`
-        : 'http://localhost:8000/api/cars';
+        ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars/${editingCar.id}`
+        : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars`;
         
       const method = editingCar ? 'PUT' : 'POST';
 
@@ -143,7 +143,7 @@ function FleetManagement() {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this car?")) {
       try {
-        const res = await fetch(`http://localhost:8000/api/cars/${id}`, {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars/${id}`, {
           method: 'DELETE'
         });
         if (res.ok) {
@@ -159,7 +159,7 @@ function FleetManagement() {
     try {
       const data = new FormData();
       data.append('is_featured', !car.is_featured);
-      const res = await fetch(`http://localhost:8000/api/cars/${car.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars/${car.id}`, {
         method: 'PUT',
         body: data
       });
@@ -185,7 +185,7 @@ function FleetManagement() {
         mileage: car.mileage,
         images: [] 
       });
-      setImagePreviews(car.images ? car.images.map(img => img.startsWith('/') ? `http://localhost:8000${img}` : img) : []);
+      setImagePreviews(car.images ? car.images.map(img => img.startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${img}` : img) : []);
     } else {
       setEditingCar(null);
       setFormData({
@@ -237,7 +237,7 @@ function FleetManagement() {
               {cars.map(car => (
                 <tr key={car.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                   <td className="px-6 py-4 flex items-center gap-4">
-                    <img src={car.images && car.images.length > 0 ? (car.images[0].startsWith('/') ? `http://localhost:8000${car.images[0]}` : car.images[0]) : ''} alt={car.model} className="w-16 h-12 rounded object-cover border border-gray-200" />
+                    <img src={car.images && car.images.length > 0 ? (car.images[0].startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${car.images[0]}` : car.images[0]) : ''} alt={car.model} className="w-16 h-12 rounded object-cover border border-gray-200" />
                     <div>
                       <div className="font-bold text-[#1c3a59] text-base">{car.brand} {car.model}</div>
                       <div className="text-xs text-gray-400">{car.year} Model</div>

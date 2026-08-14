@@ -19,7 +19,7 @@ export default function MyBookings() {
 
   const fetchBookings = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/api/bookings?customer_id=${dbUser.id}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/bookings?customer_id=${dbUser.id}`);
       if (res.ok) {
         const data = await res.json();
         setBookings(data.reverse()); // Show newest first

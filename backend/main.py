@@ -16,14 +16,21 @@ os.makedirs("uploads", exist_ok=True)
 
 app = FastAPI(title="SanCars API", description="Backend for Pondicherry Car Rental Service")
 
-# Configure CORS for the React frontend
+origins = [
+    "http://localhost:5173",
+]
+env_origins = os.getenv("CORS_ORIGINS")
+if env_origins:
+    origins.extend([o.strip() for o in env_origins.split(",")])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], # Vite's default port
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 

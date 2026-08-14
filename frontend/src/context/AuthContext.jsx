@@ -17,7 +17,7 @@ export function AuthProvider({ children }) {
   const syncWithBackend = async (firebaseUser, userName = null) => {
     try {
       const token = await firebaseUser.getIdToken();
-      const url = new URL('http://localhost:8000/api/auth/me');
+      const url = new URL(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/auth/me`);
       if (userName) {
         url.searchParams.append('name', userName);
       }

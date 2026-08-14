@@ -54,7 +54,7 @@ const CarCard = ({ car, onReserve }) => {
     : (car.image ? [car.image] : []);
 
   const currentImage = images.length > 0 
-    ? (images[imageIndex].startsWith('/') ? `http://localhost:8000${images[imageIndex]}` : images[imageIndex]) 
+    ? (images[imageIndex].startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}${images[imageIndex]}` : images[imageIndex]) 
     : '';
 
   return (
@@ -168,7 +168,7 @@ function Cars() {
   };
 
   useEffect(() => {
-    fetch('http://localhost:8000/api/cars')
+    fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/cars`)
       .then((res) => res.json())
       .then((data) => setCars(data))
       .catch((err) => console.error("Error fetching cars:", err));

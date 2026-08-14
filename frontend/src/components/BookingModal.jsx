@@ -53,7 +53,7 @@ const BookingModal = ({ isOpen, onClose, car }) => {
     setError('');
     
     try {
-      const res = await fetch('http://localhost:8000/api/bookings', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
